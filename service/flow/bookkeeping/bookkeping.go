@@ -25,7 +25,6 @@ func (f *BookkepingUnit) Process(previous *model.StatusStream, next *model.Statu
 	}
 	resp, err := general.MakeHTTPRequest[ApplyRequest, ApplyResponse]("POST", f.Config.BookkepingApplyURL, &breq)
 	if err != nil {
-		f.Err = err
 		f.OrderStatus = model.OrderInternalError
 		next.Forward <- model.Cancel
 		previous.Back <- model.Cancel
@@ -66,7 +65,6 @@ func (f *BookkepingUnit) Process(previous *model.StatusStream, next *model.Statu
 
 	updresp, err := general.MakeHTTPRequest[interface{}, UpdateResponse]("GET", f.Config.BookkepingUpdateURL+recordID.String(), nil)
 	if err != nil {
-		f.Err = err
 		f.OrderStatus = model.OrderInternalError
 		next.Forward <- model.Cancel
 		previous.Back <- model.Cancel

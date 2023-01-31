@@ -8,7 +8,7 @@ import (
 	"github.com/geneva-lake/stateful_flow/service/flow/storage"
 )
 
-func Start(flow *model.OrderFlow) {
+func Process(flow *model.OrderFlow) {
 	repo := storage.NewRepository(general.NewPgsql(flow.Config.DBConnectionString))
 	bu := (*bookkeeping.BookkepingUnit)(flow)
 	fu := (*financials.FinancialsUnit)(flow)

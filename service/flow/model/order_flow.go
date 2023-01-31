@@ -7,10 +7,29 @@ import (
 	"github.com/shopspring/decimal"
 )
 
+type FlowStatus int
+
+const (
+	Proceed FlowStatus = 1
+	Cancel  FlowStatus = 2
+)
+
+type StatusStream struct {
+	Forward chan FlowStatus
+	Back    chan FlowStatus
+}
+
+func NewStatusStream() *StatusStream {
+	stream := StatusStream{
+		Forward: make(chan FlowStatus),
+		Back:    make(chan FlowStatus),
+	}
+	return &stream
+}
+
 type OrderStatus string
 
 const (
-	NotPossible              OrderStatus = "not_possible"
 	Created                  OrderStatus = "created"
 	OrderInternalError       OrderStatus = "internal_error"
 	OrderBookkepingSuccess   OrderStatus = "bookkeping_success"
@@ -28,6 +47,5 @@ type OrderFlow struct {
 	UserID       uuid.UUID
 	ProductID    int
 	ProductPrice decimal.Decimal
-	Err          error
 	Ctx          context.Context
 }

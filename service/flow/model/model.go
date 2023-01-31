@@ -1,21 +1,31 @@
 package model
 
-type FlowStatus int
-
-const (
-	Proceed FlowStatus = 1
-	Cancel  FlowStatus = 2
+import (
+	"github.com/geneva-lake/stateful_flow/general"
+	"github.com/google/uuid"
+	"github.com/shopspring/decimal"
 )
 
-type StatusStream struct {
-	Forward chan FlowStatus
-	Back    chan FlowStatus
+type OrderRequest struct {
+	UserID       uuid.UUID
+	ProductID    int
+	ProductPrice decimal.Decimal
 }
 
-func NewStatusStream() *StatusStream {
-	stream := StatusStream{
-		Forward: make(chan FlowStatus),
-		Back:    make(chan FlowStatus),
-	}
-	return &stream
+type OrderError string
+
+const (
+	WrongRequest  OrderError = "wrong_request"
+	InternalError OrderError = "internal_error"
+)
+
+type OrderResponse struct {
+	Status general.ResponseStatus
+	Error  OrderError
+	Result *OrderResult
+}
+
+type OrderResult struct {
+	OrderStatus OrderStatus
+	OrderID     int
 }
