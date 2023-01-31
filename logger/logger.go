@@ -31,13 +31,6 @@ func (l *LogString) ErrorCheck(err error) *LogString {
 	return l
 }
 
-func (l *LogString) PanicCheck(panic interface{}) *LogString {
-	if panic != nil {
-		l.WriteString(fmt.Sprintf(", panic: %s", panic))
-	}
-	return l
-}
-
 func (l *LogString) HttpStatusWrite(status int) *LogString {
 	if status != 0 {
 		l.WriteString(fmt.Sprintf(", status: %d", status))
@@ -72,9 +65,9 @@ func (l *LogString) String() string {
 	return l.Builder.String()
 }
 
-func LogEndpoint(level LogLevel, function string, httpStatus int, err error, panic interface{}, req interface{}, resp interface{}) {
+func LogEndpoint(level LogLevel, function string, httpStatus int, err error, req interface{}, resp interface{}) {
 	logString := new(LogString)
-	s := logString.LevelBegin(level, function).PanicCheck(panic).ErrorCheck(err).
+	s := logString.LevelBegin(level, function).ErrorCheck(err).
 		HttpStatusWrite(httpStatus).RequestWrite(req).ResponseWrite(resp).String()
 	log.Println(s)
 }

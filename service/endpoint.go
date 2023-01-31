@@ -17,20 +17,6 @@ import (
 func MakeOrderEndpoint(cfg *model.Config) general.Endpoint {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Add("Content-Type", "application/json")
-		defer func() {
-			r := recover()
-			if r != nil {
-				w.WriteHeader(http.StatusInternalServerError)
-				resp := model.OrderResponse{
-					Status: general.StatusError,
-					Error:  model.InternalError,
-				}
-				go logger.LogEndpoint(logger.Panic, cfg.Name,
-					http.StatusInternalServerError, nil, r, nil, resp)
-				json.NewEncoder(w).Encode(resp)
-				return
-			}
-		}()
 		req, err := general.RequestDecode[model.OrderRequest](r)
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
@@ -39,7 +25,7 @@ func MakeOrderEndpoint(cfg *model.Config) general.Endpoint {
 				Error:  model.WrongRequest,
 			}
 			go logger.LogEndpoint(logger.Error, cfg.Name,
-				http.StatusBadRequest, err, nil, nil, resp)
+				http.StatusBadRequest, err, nil, resp)
 			json.NewEncoder(w).Encode(resp)
 			return
 		}
@@ -63,12 +49,12 @@ func MakeOrderEndpoint(cfg *model.Config) general.Endpoint {
 			resp.Status = general.StatusError
 			resp.Error = model.InternalError
 			go logger.LogEndpoint(logger.Error, cfg.Name,
-				http.StatusInternalServerError, nil, nil, req, resp)
+				http.StatusInternalServerError, nil, req, resp)
 			json.NewEncoder(w).Encode(resp)
 			return
 		}
 		go logger.LogEndpoint(logger.Info, cfg.Name, http.StatusOK,
-			nil, nil, req, resp)
+			nil, req, resp)
 		json.NewEncoder(w).Encode(resp)
 	}
 }
