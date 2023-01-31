@@ -1,6 +1,7 @@
 package logger
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 	"strings"
@@ -37,10 +38,33 @@ func (l *LogString) PanicCheck(panic interface{}) *LogString {
 	return l
 }
 
-func (l *LogString) AdditionalWrite(additional map[string]interface{}) *LogString {
-	for k, v := range additional {
-		l.WriteString(fmt.Sprintf(", %s: %v", k, v))
+func (l *LogString) HttpStatusWrite(status int) *LogString {
+	if status != 0 {
+		l.WriteString(fmt.Sprintf(", status: %d", status))
 	}
+	return l
+}
+
+func (l *LogString) RequestWrite(request interface{}) *LogString {
+	if request != nil {
+		breq, _ := json.Marshal(request)
+		l.WriteString(fmt.Sprintf(", request: %s", breq))
+	}
+	return l
+}
+
+func (l *LogString) ResponseWrite(response interface{}) *LogString {
+	if response != nil {
+		bresp, _ := json.Marshal(response)
+		l.WriteString(fmt.Sprintf(", response: %s", bresp))
+	}
+	return l
+}
+
+func (l *LogString) UnitWrite(orderID int, unit string, status string) *LogString {
+	l.WriteString(fmt.Sprintf(", order_id: %d", orderID))
+	l.WriteString(fmt.Sprintf(", unit: %s", unit))
+	l.WriteString(fmt.Sprintf(", status: %s", status))
 	return l
 }
 
@@ -48,8 +72,21 @@ func (l *LogString) String() string {
 	return l.Builder.String()
 }
 
-func Log(level LogLevel, function string, err error, panic interface{}, additional map[string]interface{}) {
+func LogEndpoint(level LogLevel, function string, httpStatus int, err error, panic interface{}, req interface{}, resp interface{}) {
 	logString := new(LogString)
-	s := logString.LevelBegin(level, function).PanicCheck(panic).ErrorCheck(err).String()
+	s := logString.LevelBegin(level, function).PanicCheck(panic).ErrorCheck(err).
+		HttpStatusWrite(httpStatus).RequestWrite(req).ResponseWrite(resp).String()
+	log.Println(s)
+}
+
+func LogUnit(level LogLevel, function string, err error, orderID int, unit string, status string) {
+	logString := new(LogString)
+	s := logString.LevelBegin(level, function).ErrorCheck(err).UnitWrite(orderID, unit, status).String()
+	log.Println(s)
+}
+
+func LogErrorMain(err error) {
+	logString := new(LogString)
+	s := logString.LevelBegin(Error, "main").ErrorCheck(err)
 	log.Println(s)
 }

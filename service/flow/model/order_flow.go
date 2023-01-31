@@ -1,8 +1,6 @@
 package model
 
 import (
-	"context"
-
 	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
 )
@@ -47,5 +45,4 @@ type OrderFlow struct {
 	UserID       uuid.UUID
 	ProductID    int
 	ProductPrice decimal.Decimal
-	Ctx          context.Context
 }

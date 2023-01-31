@@ -8,11 +8,15 @@ import (
 
 func MakeHTTPRequest[R any, A any](method, url string, request *R) (*A, error) {
 	var buf *bytes.Buffer
+	var r *http.Request
+	var err error
 	if request != nil {
 		buf = new(bytes.Buffer)
 		json.NewEncoder(buf).Encode(request)
+		r, err = http.NewRequest(method, url, buf)
+	} else {
+		r, err = http.NewRequest(method, url, nil)
 	}
-	r, err := http.NewRequest(method, url, buf)
 	if err != nil {
 		return nil, err
 	}

@@ -10,11 +10,11 @@ import (
 func main() {
 	cfg, err := model.NewConfig().FromFile("config.yaml").Yaml()
 	if err != nil {
-		logger.Log(logger.Error, "main", 0, err, nil, nil, nil)
+		logger.LogErrorMain(err)
 		return
 	}
 	handlers := CreateHandlers(cfg)
 	if err := http.ListenAndServe(":"+cfg.Port, handlers); err != nil {
-		logger.Log(logger.Error, "main", 0, err, nil, nil, nil)
+		logger.LogErrorMain(err)
 	}
 }

@@ -24,13 +24,15 @@ func (f *FinancialsUnit) Process(previous *model.StatusStream) {
 	url := fmt.Sprintf(f.Config.FinancialsApplyURL, f.UserID.String())
 	resp, err := general.MakeHTTPRequest[ApplyRequest, Response]("POST", url, &breq)
 	if err != nil {
-		go logger.Log(logger.Error, unit, 0, err, nil, nil, nil)
 		f.OrderStatus = model.OrderInternalError
+		go logger.LogUnit(logger.Error, f.Config.Name, err,
+			f.OrderID, unit, string(model.OrderInternalError))
 		previous.Back <- model.Cancel
 		return
 	}
 	if resp.Status == general.StatusError {
-		go logger.Log(logger.Info, unit, 0, err, nil, nil, resp)
+		go logger.LogUnit(logger.Info, f.Config.Name, nil,
+			f.OrderID, unit, string(model.OrderInternalError))
 		f.OrderStatus = model.OrderInternalError
 		previous.Back <- model.Cancel
 		return
@@ -39,10 +41,14 @@ func (f *FinancialsUnit) Process(previous *model.StatusStream) {
 	switch resp.Result.Status {
 	case Success:
 		f.OrderStatus = model.OrderFinancialsSuccess
-		previous.Back <- model.Proceed
 		transactionID = *resp.Result.TransactionID
+		go logger.LogUnit(logger.Info, f.Config.Name, nil,
+			f.OrderID, unit, string(model.OrderFinancialsSuccess))
+		previous.Back <- model.Proceed
 	case BalanceNotEnough:
 		f.OrderStatus = model.OrderBalanceNotEnough
+		go logger.LogUnit(logger.Info, f.Config.Name, nil,
+			f.OrderID, unit, string(model.OrderBalanceNotEnough))
 		previous.Back <- model.Cancel
 	}
 	status = <-previous.Forward
@@ -50,11 +56,13 @@ func (f *FinancialsUnit) Process(previous *model.StatusStream) {
 		url := fmt.Sprintf(f.Config.FinancialsRollbackURL, transactionID)
 		resp, err := general.MakeHTTPRequest[interface{}, Response]("PUT", url, nil)
 		if err != nil {
-			go logger.Log(logger.Error, unit, 0, err, nil, nil, nil)
+			go logger.LogUnit(logger.Error, f.Config.Name, err,
+				f.OrderID, unit, string(f.OrderStatus))
 			return
 		}
 		if resp.Status == general.StatusError {
-			go logger.Log(logger.Info, unit, 0, err, nil, nil, resp)
+			go logger.LogUnit(logger.Info, f.Config.Name, nil,
+				f.OrderID, unit, string(f.OrderStatus))
 		}
 	}
 }

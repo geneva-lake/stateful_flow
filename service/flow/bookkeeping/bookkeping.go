@@ -1,6 +1,8 @@
 package bookkeeping
 
 import (
+	"fmt"
+
 	"github.com/geneva-lake/stateful_flow/general"
 	"github.com/geneva-lake/stateful_flow/logger"
 	"github.com/geneva-lake/stateful_flow/service/flow/model"
@@ -16,7 +18,6 @@ func (f *BookkepingUnit) Process(previous *model.StatusStream, next *model.Statu
 		return
 	}
 	unit := "bookkeping"
-	additional := make(map[string]interface{})
 	breq := ApplyRequest{
 		UserID:       f.UserID,
 		ProductID:    f.ProductID,
@@ -26,20 +27,24 @@ func (f *BookkepingUnit) Process(previous *model.StatusStream, next *model.Statu
 	resp, err := general.MakeHTTPRequest[ApplyRequest, ApplyResponse]("POST", f.Config.BookkepingApplyURL, &breq)
 	if err != nil {
 		f.OrderStatus = model.OrderInternalError
+		go logger.LogUnit(logger.Error, f.Config.Name, err,
+			f.OrderID, unit, string(model.OrderInternalError))
 		next.Forward <- model.Cancel
 		previous.Back <- model.Cancel
-		additional["order_status"] = model.OrderInternalError
-		go logger.Log(logger.Error, unit, err, nil, additional)
 		return
 	}
 	if resp.Status == general.StatusError {
 		switch resp.Error {
 		case ProductNotFound:
 			f.OrderStatus = model.OrderInternalError
+			go logger.LogUnit(logger.Info, f.Config.Name, nil,
+				f.OrderID, unit, string(ProductNotFound))
 			next.Forward <- model.Cancel
 			previous.Back <- model.Cancel
 		case Internalerror:
 			f.OrderStatus = model.OrderInternalError
+			go logger.LogUnit(logger.Info, f.Config.Name, nil,
+				f.OrderID, unit, string(Internalerror))
 			next.Forward <- model.Cancel
 			previous.Back <- model.Cancel
 		}
@@ -50,11 +55,15 @@ func (f *BookkepingUnit) Process(previous *model.StatusStream, next *model.Statu
 	case Success:
 		f.OrderStatus = model.OrderBookkepingSuccess
 		recordID = resp.Result.RecordID
+		go logger.LogUnit(logger.Info, f.Config.Name, nil,
+			f.OrderID, unit, string(model.OrderBookkepingSuccess))
 		next.Forward <- model.Proceed
 	case ProductNotAvailable:
 		f.OrderStatus = model.OrderProductNotAvailable
 		next.Forward <- model.Cancel
 		previous.Back <- model.Cancel
+		go logger.LogUnit(logger.Info, f.Config.Name, nil,
+			f.OrderID, unit, string(ProductNotAvailable))
 		return
 	}
 	status = <-next.Back
@@ -62,15 +71,19 @@ func (f *BookkepingUnit) Process(previous *model.StatusStream, next *model.Statu
 		previous.Back <- model.Cancel
 		return
 	}
-
-	updresp, err := general.MakeHTTPRequest[interface{}, UpdateResponse]("GET", f.Config.BookkepingUpdateURL+recordID.String(), nil)
+	url := fmt.Sprintf(f.Config.BookkepingUpdateURL, recordID.String())
+	updresp, err := general.MakeHTTPRequest[interface{}, UpdateResponse]("PUT", url, nil)
 	if err != nil {
 		f.OrderStatus = model.OrderInternalError
+		go logger.LogUnit(logger.Error, f.Config.Name, err,
+			f.OrderID, unit, string(model.OrderInternalError))
 		next.Forward <- model.Cancel
 		previous.Back <- model.Cancel
 		return
 	}
 	if updresp.Status == general.StatusError {
+		go logger.LogUnit(logger.Info, f.Config.Name, nil,
+			f.OrderID, unit, string(model.OrderInternalError))
 		next.Forward <- model.Cancel
 		previous.Back <- model.Cancel
 	}
