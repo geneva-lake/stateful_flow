@@ -43,7 +43,7 @@ type Error string
 
 const (
 	ProductNotFound Error = "product_not_found"
-	Internalerror   Error = "internal_error"
+	InternalError   Error = "internal_error"
 )
 
 type UpdateResponse struct {

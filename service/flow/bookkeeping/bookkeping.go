@@ -41,10 +41,10 @@ func (f *BookkepingUnit) Process(previous *model.StatusStream, next *model.Statu
 				f.OrderID, unit, string(ProductNotFound))
 			next.Forward <- model.Cancel
 			previous.Back <- model.Cancel
-		case Internalerror:
+		case InternalError:
 			f.OrderStatus = model.OrderInternalError
 			go logger.LogUnit(logger.Info, f.Config.Name, nil,
-				f.OrderID, unit, string(Internalerror))
+				f.OrderID, unit, string(InternalError))
 			next.Forward <- model.Cancel
 			previous.Back <- model.Cancel
 		}
