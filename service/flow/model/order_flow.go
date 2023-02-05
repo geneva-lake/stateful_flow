@@ -28,14 +28,11 @@ func NewStatusStream() *StatusStream {
 type OrderStatus string
 
 const (
-	Created                  OrderStatus = "created"
+	OrderCreated             OrderStatus = "created"
+	OrderSuccess             OrderStatus = "success"
 	OrderInternalError       OrderStatus = "internal_error"
-	OrderBookkepingSuccess   OrderStatus = "bookkeping_success"
 	OrderProductNotAvailable OrderStatus = "product_not_available"
-	OrderFinancialsSuccess   OrderStatus = "financials_success"
 	OrderBalanceNotEnough    OrderStatus = "balance_not_enough"
-	Paid                     OrderStatus = "paid"
-	Canceled                 OrderStatus = "canceled"
 )
 
 type OrderFlow struct {

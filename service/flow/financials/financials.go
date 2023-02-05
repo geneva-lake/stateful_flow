@@ -40,10 +40,7 @@ func (f *FinancialsUnit) Process(previous *model.StatusStream) {
 	transactionID := ""
 	switch resp.Result.Status {
 	case Success:
-		f.OrderStatus = model.OrderFinancialsSuccess
 		transactionID = *resp.Result.TransactionID
-		go logger.LogUnit(logger.Info, f.Config.Name, nil,
-			f.OrderID, unit, string(model.OrderFinancialsSuccess))
 		previous.Back <- model.Proceed
 	case BalanceNotEnough:
 		f.OrderStatus = model.OrderBalanceNotEnough

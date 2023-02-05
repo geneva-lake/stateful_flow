@@ -53,10 +53,6 @@ func (f *BookkepingUnit) Process(previous *model.StatusStream, next *model.Statu
 	var recordID *uuid.UUID
 	switch resp.Result.Status {
 	case Success:
-		f.OrderStatus = model.OrderBookkepingSuccess
-		recordID = resp.Result.RecordID
-		go logger.LogUnit(logger.Info, f.Config.Name, nil,
-			f.OrderID, unit, string(model.OrderBookkepingSuccess))
 		next.Forward <- model.Proceed
 	case ProductNotAvailable:
 		f.OrderStatus = model.OrderProductNotAvailable

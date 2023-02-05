@@ -22,7 +22,7 @@ func (f *StorageUnit) Process(repo *Repository, previous *model.StatusStream, ne
 		ProductID:    f.ProductID,
 		OrderID:      orderID,
 		ProductPrice: f.ProductPrice,
-		Status:       model.Created,
+		Status:       model.OrderCreated,
 	}
 	err := repo.OrderApply(&stored)
 	if err != nil {
