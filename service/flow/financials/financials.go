@@ -17,12 +17,12 @@ func (f *FinancialsUnit) Process(previous *model.StatusStream) {
 	}
 	unit := "financials"
 	breq := ApplyRequest{
+		UserID:       f.UserID,
 		ProductID:    f.ProductID,
 		OrderID:      f.OrderID,
 		ProductPrice: f.ProductPrice,
 	}
-	url := fmt.Sprintf(f.Config.FinancialsApplyURL, f.UserID.String())
-	resp, err := general.MakeHTTPRequest[ApplyRequest, Response]("POST", url, &breq)
+	resp, err := general.MakeHTTPRequest[ApplyRequest, Response]("POST", f.Config.FinancialsApplyURL, &breq)
 	if err != nil {
 		f.OrderStatus = model.OrderInternalError
 		go logger.LogUnit(logger.Error, f.Config.Name, err,

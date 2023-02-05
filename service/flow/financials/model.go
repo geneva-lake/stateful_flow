@@ -2,10 +2,12 @@ package financials
 
 import (
 	"github.com/geneva-lake/stateful_flow/general"
+	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
 )
 
 type ApplyRequest struct {
+	UserID       uuid.UUID
 	OrderID      int
 	ProductID    int
 	ProductPrice decimal.Decimal

@@ -1,7 +1,7 @@
 name: order
 port: 8014
 db_connection_string: host=localhost user=postgres port=5432 dbname=orders
-financials_apply_url: http://localhost:8006/apply/%s
+financials_apply_url: http://localhost:8006/apply
 financials_rollback_url: http://localhost:8006/rollback/%s
-bookkeping_apply_url: http://localhost:8007/apply/
-bookkeping_update_url: http://localhost:8007/update/%s
+bookkeping_apply_url: http://localhost:8007/apply
+bookkeping_update_url: http://localhost:8007/update/%s/%s

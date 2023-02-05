@@ -6,12 +6,11 @@ import (
 	"github.com/shopspring/decimal"
 )
 
-type RequestStatus string
+type UpdateStatus string
 
 const (
-	OrderCreated  RequestStatus = "order_created"
-	OrderCanceled RequestStatus = "order_canceled"
-	OrderPaid     RequestStatus = "order_paid"
+	OrderCanceled UpdateStatus = "order_canceled"
+	OrderPaid     UpdateStatus = "order_paid"
 )
 
 type ApplyRequest struct {

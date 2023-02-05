@@ -62,12 +62,13 @@ func (f *BookkepingUnit) Process(previous *model.StatusStream, next *model.Statu
 			f.OrderID, unit, string(ProductNotAvailable))
 		return
 	}
+	updateStatus := OrderPaid
 	status = <-next.Back
 	if status == model.Cancel {
 		previous.Back <- model.Cancel
-		return
+		updateStatus = OrderCanceled
 	}
-	url := fmt.Sprintf(f.Config.BookkepingUpdateURL, recordID.String())
+	url := fmt.Sprintf(f.Config.BookkepingUpdateURL, recordID.String(), updateStatus)
 	updresp, err := general.MakeHTTPRequest[interface{}, UpdateResponse]("PUT", url, nil)
 	if err != nil {
 		f.OrderStatus = model.OrderInternalError
@@ -80,7 +81,9 @@ func (f *BookkepingUnit) Process(previous *model.StatusStream, next *model.Statu
 	if updresp.Status == general.StatusError {
 		go logger.LogUnit(logger.Info, f.Config.Name, nil,
 			f.OrderID, unit, string(model.OrderInternalError))
-		next.Forward <- model.Cancel
-		previous.Back <- model.Cancel
+		if status == model.Proceed {
+			next.Forward <- model.Cancel
+			previous.Back <- model.Cancel
+		}
 	}
 }
